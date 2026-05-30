@@ -11,6 +11,9 @@ let canvasContext = null;
 let faceMatcher = null;
 let lastRecognizedLabel = null;
 const STORAGE_KEY = 'faceDescriptors';
+// Konfirmasi berulang: butuh beberapa deteksi berturut-turut sebelum mencatat absen
+const requiredConsecutiveMatches = 2;
+const consecutiveMatches = { label: null, count: 0 };
 
 function getSavedDescriptors() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -99,13 +102,17 @@ async function detectFace() {
     return;
   }
 
-  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.6 });
+  // Lebih toleran terhadap pencahayaan/ukuran wajah dengan sedikit menurunkan scoreThreshold
+  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.45 });
   const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
 
   canvasContext.clearRect(0, 0, overlay.width, overlay.height);
 
   if (!result) {
     statusEl.textContent = 'Status: Menunggu wajah terlihat jelas di kamera...';
+    // reset konfirmasi jika tidak ada wajah
+    consecutiveMatches.label = null;
+    consecutiveMatches.count = 0;
     return;
   }
 
@@ -121,13 +128,25 @@ async function detectFace() {
 
   const bestMatch = faceMatcher.findBestMatch(result.descriptor);
   if (bestMatch.label !== 'unknown') {
-    statusEl.textContent = `Status: ${bestMatch.label} dikenali. Absensi tercatat.`;
-    if (lastRecognizedLabel !== bestMatch.label) {
+    // jika sama label dengan deteksi sebelumnya, tambah counter; kalau beda reset ke 1
+    if (consecutiveMatches.label === bestMatch.label) {
+      consecutiveMatches.count += 1;
+    } else {
+      consecutiveMatches.label = bestMatch.label;
+      consecutiveMatches.count = 1;
+    }
+
+    statusEl.textContent = `Status: ${bestMatch.label} dikenali (${consecutiveMatches.count}/${requiredConsecutiveMatches})`;
+
+    // hanya catat absen setelah terdeteksi beberapa kali berturut-turut untuk mengurangi false positive
+    if (consecutiveMatches.count >= requiredConsecutiveMatches && lastRecognizedLabel !== bestMatch.label) {
       addAttendanceEntry(`Absensi berhasil: ${bestMatch.label}`);
       lastRecognizedLabel = bestMatch.label;
     }
   } else {
     statusEl.textContent = 'Status: Wajah terdeteksi tetapi belum terdaftar. Gunakan halaman Registrasi Wajah.';
+    consecutiveMatches.label = null;
+    consecutiveMatches.count = 0;
   }
 }
 
@@ -151,7 +170,8 @@ async function startAttendance() {
     await loadModels();
     await startCamera();
     faceMatcher = createFaceMatcher();
-    detectionInterval = setInterval(detectFace, 700);
+    // Periksa lebih sering agar responsif ketika wajah muncul
+    detectionInterval = setInterval(detectFace, 400);
   } catch (error) {
     startButton.disabled = false;
     stopButton.disabled = true;
