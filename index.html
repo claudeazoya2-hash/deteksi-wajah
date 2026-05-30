@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absensi Kantor dengan Deteksi Wajah</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Absensi Kantor dengan Deteksi Wajah</h1>
+      <p>Website sederhana untuk absen karyawan menggunakan kamera dan deteksi wajah.</p>
+    </header>
+
+    <main>
+      <section class="instructions">
+        <h2>Cara Pakai</h2>
+        <ol>
+          <li>Izinkan akses kamera ketika diminta oleh browser.</li>
+          <li>Klik tombol <strong>Mulai Absen</strong>.</li>
+          <li>Berada pada posisi yang cukup terang dan wajah terlihat jelas di kamera.</li>
+          <li>Jika wajah terdeteksi, absensi akan tercatat otomatis.</li>
+        </ol>
+      </section>
+
+      <section class="video-section">
+        <div class="video-card">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="controls">
+          <button id="startButton">Mulai Absen</button>
+          <button id="stopButton" disabled>Berhenti</button>
+        </div>
+        <div id="status" class="status">Status: Menunggu tindakan...</div>
+      </section>
+
+      <section class="log-section">
+        <h2>Riwayat Absen</h2>
+        <div id="attendanceLog" class="log">
+          <p>Tidak ada data absen yang tercatat.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Demo deteksi wajah untuk absensi kantor. Tidak menyimpan data karyawan di server.</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
