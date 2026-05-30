@@ -102,6 +102,31 @@ button:disabled {
   cursor: not-allowed;
 }
 
+input[type="text"] {
+  flex: 1 1 200px;
+  min-width: 200px;
+  border: 1px solid #d7e0eb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 1rem;
+  color: #1a2636;
+  background: white;
+}
+
+.link-button {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: #2d7fba;
+  color: white;
+  text-decoration: none;
+}
+
+.link-button:hover {
+  background: #23638f;
+}
+
 .status {
   padding: 14px 16px;
   border-radius: 14px;

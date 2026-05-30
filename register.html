@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registrasi Wajah - Absensi Kantor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Registrasi Wajah</h1>
+      <p>Daftarkan wajah karyawan agar sistem dapat mengenali dan mencatat absensi.</p>
+      <p><a class="link-button" href="index.html">Kembali ke Absensi</a></p>
+    </header>
+
+    <main>
+      <section class="instructions">
+        <h2>Cara Registrasi</h2>
+        <ol>
+          <li>Isi nama karyawan pada kolom nama.</li>
+          <li>Klik tombol <strong>Mulai Kamera</strong> dan izinkan akses kamera.</li>
+          <li>Pastikan wajah terlihat jelas di kamera.</li>
+          <li>Klik tombol <strong>Daftarkan Wajah</strong> untuk menyimpan data.</li>
+        </ol>
+      </section>
+
+      <section class="video-section">
+        <div class="video-card">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+        </div>
+        <div class="controls">
+          <input id="nameInput" type="text" placeholder="Nama karyawan" />
+          <button id="startButton">Mulai Kamera</button>
+          <button id="registerButton" disabled>Daftarkan Wajah</button>
+          <button id="stopButton" disabled>Berhenti</button>
+        </div>
+        <div id="status" class="status">Status: Menunggu tindakan...</div>
+      </section>
+
+      <section class="log-section">
+        <h2>Wajah yang Terdaftar</h2>
+        <div id="registeredList" class="log">
+          <p>Memuat data wajah terdaftar...</p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Registrasi wajah disimpan di browser menggunakan Local Storage. Data tetap tersimpan pada perangkat yang sama.</p>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="register.js"></script>
+</body>
+</html>

@@ -6,10 +6,31 @@ const statusEl = document.getElementById('status');
 const attendanceLog = document.getElementById('attendanceLog');
 
 let stream = null;
-let isRunning = false;
 let detectionInterval = null;
 let canvasContext = null;
-let hasLogged = false;
+let faceMatcher = null;
+let lastRecognizedLabel = null;
+const STORAGE_KEY = 'faceDescriptors';
+
+function getSavedDescriptors() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
+function createFaceMatcher() {
+  const entries = getSavedDescriptors();
+  if (entries.length === 0) return null;
+  const labeledDescriptors = entries.map((entry) => {
+    const descriptor = new Float32Array(entry.descriptor);
+    return new faceapi.LabeledFaceDescriptors(entry.label, [descriptor]);
+  });
+  return new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+}
 
 async function loadModels() {
   statusEl.textContent = 'Status: Memuat model deteksi wajah...';
@@ -50,6 +71,7 @@ function stopCamera() {
   if (canvasContext) {
     canvasContext.clearRect(0, 0, overlay.width, overlay.height);
   }
+  lastRecognizedLabel = null;
 }
 
 function formatTime(date) {
@@ -78,30 +100,46 @@ async function detectFace() {
   }
 
   const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.6 });
-  const result = await faceapi.detectAllFaces(video, options);
+  const result = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
 
   canvasContext.clearRect(0, 0, overlay.width, overlay.height);
-  if (result.length > 0) {
-    result.forEach((detection) => {
-      const { x, y, width, height } = detection.box;
-      canvasContext.strokeStyle = '#24c45f';
-      canvasContext.lineWidth = 3;
-      canvasContext.strokeRect(x, y, width, height);
-    });
 
-    if (!hasLogged) {
-      addAttendanceEntry('Wajah terdeteksi - absensi berhasil tercatat');
-      statusEl.textContent = 'Status: Wajah terdeteksi. Absensi tercatat.';
-      hasLogged = true;
+  if (!result) {
+    statusEl.textContent = 'Status: Menunggu wajah terlihat jelas di kamera...';
+    return;
+  }
+
+  const { x, y, width, height } = result.detection.box;
+  canvasContext.strokeStyle = '#24c45f';
+  canvasContext.lineWidth = 3;
+  canvasContext.strokeRect(x, y, width, height);
+
+  if (!faceMatcher) {
+    statusEl.textContent = 'Status: Belum ada wajah terdaftar. Daftarkan di halaman Registrasi Wajah.';
+    return;
+  }
+
+  const bestMatch = faceMatcher.findBestMatch(result.descriptor);
+  if (bestMatch.label !== 'unknown') {
+    statusEl.textContent = `Status: ${bestMatch.label} dikenali. Absensi tercatat.`;
+    if (lastRecognizedLabel !== bestMatch.label) {
+      addAttendanceEntry(`Absensi berhasil: ${bestMatch.label}`);
+      lastRecognizedLabel = bestMatch.label;
     }
   } else {
-    statusEl.textContent = 'Status: Menunggu wajah terlihat jelas di kamera...';
+    statusEl.textContent = 'Status: Wajah terdeteksi tetapi belum terdaftar. Gunakan halaman Registrasi Wajah.';
   }
 }
 
 async function startAttendance() {
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
     statusEl.textContent = 'Status: Browser tidak mendukung kamera. Gunakan browser modern.';
+    return;
+  }
+
+  const saved = getSavedDescriptors();
+  if (saved.length === 0) {
+    statusEl.textContent = 'Status: Belum ada wajah terdaftar. Silakan daftarkan wajah dulu di halaman Registrasi Wajah.';
     return;
   }
 
@@ -112,9 +150,8 @@ async function startAttendance() {
   try {
     await loadModels();
     await startCamera();
-    isRunning = true;
-    hasLogged = false;
-    detectionInterval = setInterval(detectFace, 600);
+    faceMatcher = createFaceMatcher();
+    detectionInterval = setInterval(detectFace, 700);
   } catch (error) {
     startButton.disabled = false;
     stopButton.disabled = true;
@@ -126,7 +163,6 @@ function stopAttendance() {
   stopButton.disabled = true;
   statusEl.textContent = 'Status: Absensi dihentikan. Klik Mulai Absen untuk memulai lagi.';
   stopCamera();
-  isRunning = false;
 }
 
 startButton.addEventListener('click', startAttendance);

@@ -4,17 +4,20 @@ Website sederhana untuk absensi kantor menggunakan deteksi wajah dari kamera kom
 
 ## Cara menggunakan
 
-1. Buka file `index.html` di browser modern.
-2. Izinkan akses kamera ketika diminta.
-3. Klik tombol **Mulai Absen**.
-4. Tampilkan wajah Anda ke kamera sampai sistem mengenali wajah.
-5. Riwayat absen akan muncul di bagian bawah.
+1. Buka file `register.html` di browser modern.
+2. Isi nama karyawan dan klik tombol **Mulai Kamera**.
+3. Arahkan wajah ke kamera lalu klik **Daftarkan Wajah**.
+4. Buka `index.html` untuk melakukan absensi.
+5. Klik tombol **Mulai Absen** lalu pastikan wajah terdaftar terlihat jelas di kamera.
+6. Riwayat absen akan muncul di bagian bawah.
 
 ## File utama
 
-- `index.html` — halaman utama website
+- `index.html` — halaman utama absensi
+- `register.html` — halaman registrasi wajah
 - `styles.css` — gaya tampilan
-- `script.js` — logika kamera dan deteksi wajah
+- `script.js` — logika absensi dan pengenalan wajah
+- `register.js` — logika registrasi wajah
 
 ## Deploy
 
