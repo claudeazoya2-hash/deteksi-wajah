@@ -16,6 +16,11 @@ Website sederhana untuk absensi kantor menggunakan deteksi wajah dari kamera kom
 - `styles.css` — gaya tampilan
 - `script.js` — logika kamera dan deteksi wajah
 
+## Deploy
+
+- Situs akan diterbitkan otomatis melalui GitHub Pages.
+- URL yang digunakan: `https://claudeazoya2-hash.github.io/deteksi-wajah/`
+
 ## Catatan
 
 Website ini adalah demo front-end. Absensi hanya disimpan sementara di browser dan tidak dikirim ke server.
